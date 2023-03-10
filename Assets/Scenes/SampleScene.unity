@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028305, g: 0.22571313, b: 0.3069213, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -200,14 +200,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_LocalRotation: {x: 0.23911765, y: 0.36964378, z: -0.09904577, w: 0.8923991}
-  m_LocalPosition: {x: -5, y: 15, z: -5}
+  m_LocalRotation: {x: 0.3995492, y: 0, z: 0, w: 0.91671175}
+  m_LocalPosition: {x: 12.87, y: 13.19, z: -3.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 30, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 47.1, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,10 +435,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   columnLength: 25
-  rowLength: 25
+  rowLength: 10
   x_Space: 1
   z_Space: 1
   grass: {fileID: 7262555919713844576, guid: 0446e7dd77833494cad2c5cc49da4a4f, type: 3}
+  flowers: {fileID: 3004225673058029717, guid: 22b0534a94a7a4a43862e790a5ed7416, type: 3}
+  flowerChance: 10
   currentGrid: []
   gotGrid: 0
   hitted: {fileID: 0}

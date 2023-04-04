@@ -1,143 +1,70 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Move")]
-    [SerializeField]
-    float walkFactor = 5.0F;
+    // Movement Components
+    CharacterController controller;
+    Animator animator;
 
-    [SerializeField]
-    float runFactor = 8.5F;
+    private float moveSpeed = 4F;
 
-    [SerializeField]
-    float rotationFactor = 20.0F;
+    [Header("Movement System")]
+    public float walkSpeed = 4F;
+    public float runSpeed = 8F;
 
-    [Header("Jump")]
-    [SerializeField]
-    float jumpForce = 8.0F;
-
-    [SerializeField]
-    int maximumNumberOfJumps = 2;
-
-    [SerializeField]
-    float gravityMultiplier = 3.0F;
-
-    CharacterController character;
-
-    Vector3 direction;
-
-    float inputX;
-    float inputZ;
-    float magnitude;
-    float gravityY;
-    float velocityY;
-
-    bool isRunning;
-    bool isMovePressed;
-    bool isJumpPressed;
-
-    int numberOfJumps;
-
-    void Awake()
+    // Start is called before the first frame update
+    void Start()
     {
-        character = GetComponent<CharacterController>();
+        // Get movements components
+        controller= GetComponent<CharacterController>();
+        animator= GetComponent<Animator>();
 
-        gravityY = Physics.gravity.y;
     }
 
+    // Update is called once per frame
     void Update()
     {
-        HandleInputs();
-        HandleGravity();
-        HandleMove();
-        HandleRotation();
+        // Runs is called once per frame
+        Move();
     }
 
-    void HandleInputs()
+    public void Move()
     {
-        inputX = Input.GetAxisRaw("Horizontal");
-        inputZ = Input.GetAxisRaw("Vertical");
-
-        isMovePressed = inputX != 0.0F || inputZ != 0.0F;
-        isRunning = Input.GetButton("Fire3");
-        isJumpPressed = Input.GetButtonDown("Jump");
-    }
-
-    void HandleGravity()
-    {
-        bool isGrounded = IsGrounded();
-        if (isGrounded)
+        // Is the sprint key pressed down?
+        if (Input.GetButton("Sprint"))
         {
-            if (velocityY < 1.0F)
-            {
-                velocityY = -1.0F;
-            }
-
-            if (isJumpPressed)
-            {
-                HandleJump();
-                StartCoroutine(WaitForGroundedCoroutine());
-            }
+            // Set the animaion to run and increases our movespeed
+            moveSpeed = runSpeed;
+            animator.SetBool("Run", true);
         }
         else
         {
-            if (isJumpPressed && maximumNumberOfJumps > 1)
-            {
-                HandleJump();
-            }
-            velocityY += gravityY * gravityMultiplier * Time.deltaTime;
+            // Set the animaion to walk and increases our movespeed
+            moveSpeed = walkSpeed;
+            animator.SetBool("Run", false);
         }
-    }
 
-    void HandleJump()
-    {
-        if (numberOfJumps > maximumNumberOfJumps)
+        // Get the horizontal and vertical inputs as a number
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        // Direction in a normalized vector
+        Vector3 dir = new Vector3(horizontal, 0.0F, vertical).normalized;
+        Vector3 velocity = moveSpeed * Time.deltaTime * dir;
+
+        // Check if there is movement
+        if (dir.magnitude >= 0.1F)
         {
-            return;
+            // Look towards that direction
+            transform.rotation = Quaternion.LookRotation(dir);
+
+            // Move
+            controller.Move(velocity);
         }
 
-        numberOfJumps++;
-        velocityY = jumpForce / numberOfJumps;
-    }
-
-    void HandleMove()
-    {
-        direction = new Vector3(inputX, 0.0F, inputZ);
-        magnitude = Mathf.Clamp01(direction.magnitude);
-        direction.Normalize();
-
-        Vector3 velocity = 
-            direction * magnitude *
-                (isRunning
-                    ? runFactor
-                    : walkFactor);
-
-        velocity.y = velocityY;
-        character.Move(velocity * Time.deltaTime);
-    }
-
-    void HandleRotation()
-    {
-        if (isMovePressed)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-            transform.rotation = 
-                Quaternion.Lerp
-                    (transform.rotation, targetRotation, rotationFactor * Time.deltaTime);
-        }
-    }
-    IEnumerator WaitForGroundedCoroutine()
-    {
-        yield return new WaitUntil(() => !IsGrounded());
-        yield return new WaitUntil(() => IsGrounded());
-        numberOfJumps = 0;
-    }
-
-    bool IsGrounded()
-    {
-        return character.isGrounded;
+        // Animator speed parameter
+        animator.SetFloat("Speed", dir.magnitude);
     }
 }

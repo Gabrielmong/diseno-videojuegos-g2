@@ -28,6 +28,11 @@ public class GameGrid : MonoBehaviour
 
     public bool creatingFields;
 
+    // NEW
+    public GameObject goldSystem;
+    public int fieldPrice;
+    public int plantPrice;
+    // NEW END
 
     void Start()
     {
@@ -72,13 +77,17 @@ public class GameGrid : MonoBehaviour
                         Destroy(hitted);
                     }
                     else if (_Hit.transform.tag == "grid"
-                        && _Hit.transform.gameObject.name == "Field(Clone)")
+                        && _Hit.transform.gameObject.name == "Field(Clone)"
+                        && goldSystem.GetComponent<GoldSystem>().gold >= fieldPrice) // NEW
                     {
                         Debug.Log("Field");
                         hitted = _Hit.transform.gameObject;
                         Instantiate(grass, hitted.transform.position, Quaternion.identity);
                         Destroy(hitted);
 
+                        // NEW
+                        goldSystem.GetComponent<GoldSystem>().gold -= fieldPrice;
+                        // NEW END
                     }
                 }
 
@@ -89,11 +98,16 @@ public class GameGrid : MonoBehaviour
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out _Hit))
             {
                 if (_Hit.transform.tag == "grid"
-                    && _Hit.transform.gameObject.name == "Field(Clone)")
+                    && _Hit.transform.gameObject.name == "Field(Clone)"
+                    && goldSystem.GetComponent<GoldSystem>().gold >= plantPrice) // NEW
                 {
                     hitted = _Hit.transform.gameObject;
                     Instantiate(flowers, hitted.transform.position, Quaternion.identity);
                     Destroy(hitted);
+
+                    // NEW
+                    goldSystem.GetComponent<GoldSystem>().gold -= plantPrice;
+                    // NEW END
                 }
             }
         }

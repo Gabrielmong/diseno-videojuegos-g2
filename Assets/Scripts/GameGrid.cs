@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameGrid : MonoBehaviour
 {
+    [SerializeField]
+    GameObject player; // to detect if tile is in range of player (3 tiles)
     public int columnLength, rowLength;
 
     public float x_Space, z_Space;
@@ -64,10 +66,10 @@ public class GameGrid : MonoBehaviour
 
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out _Hit))
             {
-
-                Debug.Log(_Hit.transform.gameObject.name);
                 if (creatingFields == true)
                 {
+                    if (checkIfInRange()) { return; }
+
                     if (_Hit.transform.tag == "grid"
                         && (_Hit.transform.gameObject.name == "Flowers(Clone)"
                         || _Hit.transform.gameObject.name == "Grass(Clone)"))
@@ -80,7 +82,6 @@ public class GameGrid : MonoBehaviour
                         && _Hit.transform.gameObject.name == "Field(Clone)"
                         && goldSystem.GetComponent<GoldSystem>().gold >= fieldPrice) // NEW
                     {
-                        Debug.Log("Field");
                         hitted = _Hit.transform.gameObject;
                         Instantiate(grass, hitted.transform.position, Quaternion.identity);
                         Destroy(hitted);
@@ -97,6 +98,8 @@ public class GameGrid : MonoBehaviour
         {
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out _Hit))
             {
+                if (checkIfInRange()) { return; }
+
                 if (_Hit.transform.tag == "grid"
                     && _Hit.transform.gameObject.name == "Field(Clone)"
                     && goldSystem.GetComponent<GoldSystem>().gold >= plantPrice) // NEW
@@ -110,6 +113,21 @@ public class GameGrid : MonoBehaviour
                     // NEW END
                 }
             }
+        }
+    }
+
+    public bool checkIfInRange()
+    {
+        if (Vector3.Distance(player.transform.position, _Hit.transform.position) > 3)
+        {
+            Debug.Log("Too far away");
+            return true;
+
+        }
+        else
+        {
+            Debug.Log("In range");
+            return false;
         }
     }
 

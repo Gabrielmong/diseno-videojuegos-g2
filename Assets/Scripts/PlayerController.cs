@@ -57,8 +57,9 @@ public class PlayerController : MonoBehaviour
         // Check if there is movement
         if (dir.magnitude >= 0.1F)
         {
-            // Look towards that direction
-            transform.rotation = Quaternion.LookRotation(dir);
+            // Look towards that direction smoothly
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 0.15F);
+            
 
             // Move
             controller.Move(velocity);

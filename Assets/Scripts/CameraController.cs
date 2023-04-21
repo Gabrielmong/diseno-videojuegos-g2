@@ -14,10 +14,10 @@ public class CameraController : MonoBehaviour
     private Vector3 offset;
 
     [SerializeField]
-    private float maxZoom = 10f;
+    private float maxZoom = 25f;
 
     [SerializeField]
-    private float minZoom = 2f;
+    private float minZoom = 6f;
     void Start()
     {
         if (offset == Vector3.zero)

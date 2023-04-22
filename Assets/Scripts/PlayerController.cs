@@ -14,12 +14,23 @@ public class PlayerController : MonoBehaviour
     public float walkSpeed = 4F;
     public float runSpeed = 8F;
 
+    [Header("Health System")]
+    
+    [SerializeField]
+    private int maxHealth = 100;
+
+    [SerializeField]
+    private int currentHealth;
+
+    
+
     // Start is called before the first frame update
     void Start()
     {
         // Get movements components
         controller= GetComponent<CharacterController>();
         animator= GetComponent<Animator>();
+        currentHealth = maxHealth;
 
     }
 
@@ -68,4 +79,24 @@ public class PlayerController : MonoBehaviour
         // Animator speed parameter
         animator.SetFloat("Speed", dir.magnitude);
     }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // Die animation
+        animator.SetTrigger("Die");
+
+        // Disable the player
+        this.enabled = false;
+    }
+
 }

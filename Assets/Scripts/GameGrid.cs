@@ -118,17 +118,7 @@ public class GameGrid : MonoBehaviour
 
     public bool checkIfInRange()
     {
-        if (Vector3.Distance(player.transform.position, _Hit.transform.position) > 3)
-        {
-            Debug.Log("Too far away");
-            return true;
-
-        }
-        else
-        {
-            Debug.Log("In range");
-            return false;
-        }
+        return Vector3.Distance(player.transform.position, _Hit.transform.position) > 3;    
     }
 
     public void createFields()

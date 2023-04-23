@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -22,6 +23,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private int currentHealth;
 
+    [SerializeField]
+    private TextMesh topOfHeadText;
+
     
 
     // Start is called before the first frame update
@@ -39,6 +43,14 @@ public class PlayerController : MonoBehaviour
     {
         // Runs is called once per frame
         Move();
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TakeDamage(10);
+        } else if (Input.GetKeyDown(KeyCode.R))
+        {
+            Heal(10);
+        }
     }
 
     public void Move()
@@ -83,6 +95,7 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        DisplayDamageTaken(damage);
 
         if (currentHealth <= 0)
         {
@@ -97,6 +110,42 @@ public class PlayerController : MonoBehaviour
 
         // Disable the player
         this.enabled = false;
+    }
+
+    void DisplayDamageTaken(int damage)
+    {
+        topOfHeadText.text = "-" + damage;
+        topOfHeadText.color = Color.red;
+
+        // Reset the text after 1 second
+        Invoke("ResetTopOfHeadText", 1f);
+               
+    }
+
+    void DisplayHealing(int healing)
+    {
+        topOfHeadText.text = "+" + healing;
+        topOfHeadText.color = Color.green;
+
+        // Reset the text after 1 second
+        Invoke("ResetTopOfHeadText", 1f);
+    }
+
+    void ResetTopOfHeadText()
+    {
+        topOfHeadText.text = "";
+    }
+
+    public void Heal(int healing)
+    {
+        currentHealth += healing;
+
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+
+        DisplayHealing(healing);
     }
 
 }

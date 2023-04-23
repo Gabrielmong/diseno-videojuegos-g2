@@ -30,7 +30,7 @@ public class PatrolController : MonoBehaviour
     float walkPointRange;
 
     [SerializeField]
-    int sightRange;
+    float sightRange;
 
     [Header("NavMeshAgent")]
     [SerializeField]
@@ -55,14 +55,22 @@ public class PatrolController : MonoBehaviour
     [SerializeField]
     float attackRate;
 
-    [SerializeField]
-    int attackDamage;
-
     float nextAttackTime;
 
     private bool waiting;
+    
+    [Header("Projectile")]
+    [SerializeField]
+    private GameObject FirePoint;
 
+    [SerializeField]
+    private GameObject projectile;
 
+    [SerializeField]
+    private float projectileSpeed;
+
+    [SerializeField]
+    private float projectileLifeTime;
 
 
     void Awake()
@@ -111,7 +119,6 @@ public class PatrolController : MonoBehaviour
         if (walkPointSet)
         {
             agent.SetDestination(walkPoint);
-            Debug.Log("Walking");
             animator.SetBool("isWalking", true);
         }
         else
@@ -157,30 +164,20 @@ public class PatrolController : MonoBehaviour
         // Make sure enemy doesn't move
         agent.SetDestination(transform.position);
 
-        transform.LookAt(target);
+        transform.LookAt(new Vector3(target.position.x, transform.position.y, target.position.z));
         animator.SetBool("isWalking", false);
 
         if (Time.time >= nextAttackTime)
         {
             animator.SetBool("isAttacking", true);
-            AttackPlayer();
-
-            
+            AttackPlayer();   
         }
-        
-
-
     }
 
     private void AttackPlayer()
     {
         // Attack code here
         Collider[] hitPlayer = Physics.OverlapSphere(transform.position, attackRange, whatIsPlayer);
-
-        foreach (Collider player in hitPlayer)
-        {
-            player.GetComponent<PlayerController>().TakeDamage(attackDamage);
-        }
 
         // random time between 1 and 3 seconds
         float waitTime = Random.Range(1f, 3f);
@@ -204,6 +201,8 @@ public class PatrolController : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, sightRange);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, walkPointRange);
     }
 
     IEnumerator StayStill()
@@ -213,6 +212,14 @@ public class PatrolController : MonoBehaviour
         waiting = true;
         yield return new WaitForSeconds(waitTime);
         waiting = false;
+    }
+
+    public void Shoot()
+    {
+        GameObject bullet = Instantiate(projectile, FirePoint.transform.position, FirePoint.transform.rotation);
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        rb.AddForce(FirePoint.transform.forward * projectileSpeed, ForceMode.Impulse);
+        Destroy(bullet, projectileLifeTime);
     }
 
 

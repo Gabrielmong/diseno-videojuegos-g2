@@ -23,9 +23,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private int currentHealth;
 
-    [SerializeField]
-    private TextMesh topOfHeadText;
 
+    [Header("Attack System")]
+    [SerializeField]
+    public int minDamage;
+
+    [SerializeField]
+    public int maxDamage;
+
+    [SerializeField]
+    private GameObject healthMessage;
+
+    [SerializeField]
+    private Transform healthMessageSpawn;
     
 
     // Start is called before the first frame update
@@ -43,6 +53,8 @@ public class PlayerController : MonoBehaviour
     {
         // Runs is called once per frame
         Move();
+        HandleClick();
+
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -92,11 +104,68 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("Speed", dir.magnitude);
     }
 
+    public void HandleClick(){
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            // cast a ray down, if the layer is grid, play the crop picking animation, else attack
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                //Debug.Log(hit.collider.gameObject.layer);
+                if (hit.collider.gameObject.tag == "grid")
+                {
+                    animator.SetBool("isPulling", true);
+                    StartCoroutine(Delay());
+                }
+                else
+                {
+                    animator.SetBool("isPulling", false);
+                        
+                    Attack();
+                }
+            }
+        }
+    }
+
+    public void Attack()
+    {
+        animator.SetBool("Attack", true);
+        
+        StartCoroutine(Delay());
+    }
+
+    IEnumerator Delay()
+    {
+        yield return new WaitForSeconds(0.1F);
+        animator.SetBool("Attack", false);
+        animator.SetBool("isPulling", false);
+        animator.SetBool("isDamaged", false);
+    }
+
+    public void DealDamage() {
+        Collider[] hitEnemies = Physics.OverlapSphere(transform.position, 0.3F);
+
+        foreach (Collider enemy in hitEnemies)
+        {
+            if (enemy.GetComponent<EnemyController>())
+            {
+                int damage = Random.Range(minDamage, maxDamage);
+                enemy.GetComponent<EnemyController>().TakeDamage(damage);
+            }
+        }
+    }
+
+    
+
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
         DisplayDamageTaken(damage);
-
+        animator.SetBool("isDamaged", true);
+        StartCoroutine(Delay());
         if (currentHealth <= 0)
         {
             Die();
@@ -114,26 +183,17 @@ public class PlayerController : MonoBehaviour
 
     void DisplayDamageTaken(int damage)
     {
-        topOfHeadText.text = "-" + damage;
-        topOfHeadText.color = Color.red;
+        GameObject message = Instantiate(healthMessage, healthMessageSpawn.position, Quaternion.identity);
+        message.GetComponent<TextMesh>().text = damage.ToString();
+        message.GetComponent<TextMesh>().color = Color.red;
 
-        // Reset the text after 1 second
-        Invoke("ResetTopOfHeadText", 1f);
-               
     }
 
     void DisplayHealing(int healing)
     {
-        topOfHeadText.text = "+" + healing;
-        topOfHeadText.color = Color.green;
-
-        // Reset the text after 1 second
-        Invoke("ResetTopOfHeadText", 1f);
-    }
-
-    void ResetTopOfHeadText()
-    {
-        topOfHeadText.text = "";
+        GameObject message = Instantiate(healthMessage, healthMessageSpawn.position, Quaternion.identity);
+        message.GetComponent<TextMesh>().text = healing.ToString();
+        message.GetComponent<TextMesh>().color = Color.green;
     }
 
     public void Heal(int healing)

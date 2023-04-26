@@ -222,5 +222,11 @@ public class PatrolController : MonoBehaviour
         Destroy(bullet, projectileLifeTime);
     }
 
+    public void Disable() {
+        this.enabled = false;
+    }
+
+    
+
 
 }

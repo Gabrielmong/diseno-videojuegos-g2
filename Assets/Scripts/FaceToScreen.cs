@@ -4,21 +4,24 @@ using UnityEngine;
 
 public class FaceToScreen : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         transform.LookAt(Camera.main.transform);
 
         transform.Rotate(0, 180, 0);
+
+        Destroy(gameObject, 2);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
-        transform.LookAt(Camera.main.transform);
+        transform.Translate(Vector3.up * Time.deltaTime * 2);
+    
+        transform.Translate(Vector3.right * Time.deltaTime * Mathf.Sin(Time.time * 10));
 
-        transform.Rotate(0, 180, 0);
-        
+        Color color = GetComponent<Renderer>().material.color;
+        color.a -= Time.deltaTime / 3;
+        GetComponent<Renderer>().material.color = color;  
+
     }
 }

@@ -13,7 +13,10 @@ public class ProjectileController : MonoBehaviour
     private float lifeTime = 5f;
 
     [SerializeField]
-    private int damage = 1;
+    private int maxDamage = 10;
+
+    [SerializeField]
+    private int minDamage = 5;
     
     [SerializeField]
     LayerMask whatIsSolid;
@@ -29,6 +32,7 @@ public class ProjectileController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            int damage = Random.Range(minDamage, maxDamage);
             collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
             Destroy(gameObject);
         }

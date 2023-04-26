@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private int currentHealth;
 
+    public HealthBar healthBar;
 
     [Header("Attack System")]
     [SerializeField]
@@ -45,7 +46,7 @@ public class PlayerController : MonoBehaviour
         controller= GetComponent<CharacterController>();
         animator= GetComponent<Animator>();
         currentHealth = maxHealth;
-
+        healthBar.SetMaxHealth(maxHealth);
     }
 
     // Update is called once per frame
@@ -166,6 +167,9 @@ public class PlayerController : MonoBehaviour
         DisplayDamageTaken(damage);
         animator.SetBool("isDamaged", true);
         StartCoroutine(Delay());
+
+        healthBar.SetHealth(currentHealth);
+
         if (currentHealth <= 0)
         {
             Die();

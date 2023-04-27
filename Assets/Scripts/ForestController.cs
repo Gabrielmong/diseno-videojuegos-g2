@@ -46,7 +46,7 @@ public class ForestController : MonoBehaviour
     [SerializeField]
     private int flowerCount;
 
-    private void Start()
+    private void Awake()
     {
         SpawnFlowers();
         SpawnBushes();
@@ -147,7 +147,6 @@ public class ForestController : MonoBehaviour
             {
                 if (hit.collider.gameObject.tag != "Ground")
                 {
-                    i -= 1;
                     continue;
                 }
 
@@ -181,7 +180,6 @@ public class ForestController : MonoBehaviour
             {
                 if (hit.collider.gameObject.tag != "Ground")
                 {
-                    i -= 1;
                     continue;
                 }
 

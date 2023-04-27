@@ -18,6 +18,8 @@ public class CameraController : MonoBehaviour
 
     [SerializeField]
     private float minZoom = 6f;
+
+    private bool isChangingPerspective = false;
     void Start()
     {
         if (offset == Vector3.zero)
@@ -38,6 +40,16 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         handleCameraPan();
+
+        if (!isChangingPerspective)
+        {
+            if (Input.GetKey(KeyCode.Keypad5))
+            {
+                ChangePerspective();
+                isChangingPerspective = true;
+                StartCoroutine(ChangePerspectiveCoroutine());
+            }
+        }
     }
 
     private void handleCameraPan()
@@ -49,13 +61,15 @@ public class CameraController : MonoBehaviour
         else if (Input.GetKey(KeyCode.Keypad2))
         {
             transform.RotateAround(target.position, transform.right, -5f);
-        } else if (Input.GetKey(KeyCode.Keypad4))
+        }
+        else if (Input.GetKey(KeyCode.Keypad4))
         {
             transform.RotateAround(target.position, transform.up, -7f);
 
             transform.RotateAround(target.position, transform.right, -9f);
 
-        } else if (Input.GetKey(KeyCode.Keypad6))
+        }
+        else if (Input.GetKey(KeyCode.Keypad6))
         {
             transform.RotateAround(target.position, transform.up, 7f);
 
@@ -77,5 +91,27 @@ public class CameraController : MonoBehaviour
                 offset = offset.normalized * (offset.magnitude + 0.1f);
             }
         }
+    }
+
+    public void ChangePerspective()
+    {
+        if (Camera.main.orthographic)
+        {
+            Camera.main.orthographic = false;
+            Camera.main.fieldOfView = 60;
+        }
+        else
+        {
+            offset = offset.normalized * maxZoom;
+
+            Camera.main.orthographic = true;
+            Camera.main.orthographicSize = 10;
+        }
+    }
+
+    IEnumerator ChangePerspectiveCoroutine()
+    {
+        yield return new WaitForSeconds(0.5f);
+        isChangingPerspective = false;
     }
 }

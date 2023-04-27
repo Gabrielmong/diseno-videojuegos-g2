@@ -33,16 +33,30 @@ public class EnemyController : MonoBehaviour
     private int chanceOfHealing = 10;
 
     private float nextHealTime = 0f;
+    
+    [SerializeField]
+    private bool isOnGameOver = false;
 
     private void Start()
     {
+         if (isOnGameOver) {
+            animator.SetBool("Dancing", true);
+            return;
+        }
+
+
         GetComponent<SphereCollider>().radius = attackRange / 2.7f;
         currentHealth = maxHealth;
 
+       
     }
 
     private void Update()
     {
+        if (isOnGameOver) {
+            return;
+        }
+
         if (Time.time >= nextHealTime)
         {
             nextHealTime = Time.time + 5f;

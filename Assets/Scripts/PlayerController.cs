@@ -66,6 +66,9 @@ public class PlayerController : MonoBehaviour
     private bool inNpcRange = false;
     private bool freezed = false;
 
+    [SerializeField]
+    private bool isOnGameOver = false;
+
     private void Awake()
     {
         Instance = this;
@@ -74,16 +77,28 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Get movements components
+        
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+
+        if (isOnGameOver) {
+            animator.SetBool("isDowned", true);
+            return;
+        }
+
+        // Get movements components
         currentHealth = maxHealth;
         healthBar.SetMaxHealth(maxHealth);
+       
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isOnGameOver) {
+            return;
+        }
+
         // Runs is called once per frame
         Move();
         HandleClick();
@@ -304,14 +319,13 @@ public class PlayerController : MonoBehaviour
 
         StartCoroutine(Delay());
         StartCoroutine(DieDelay());
-
-        sceneManagerObject.GetComponent<SceneController>().LoadScene(2);
     }
 
     IEnumerator DieDelay()
     {
-        yield return new WaitForSeconds(8F);
+        yield return new WaitForSeconds(3F);
         freezed = false;
+        sceneManagerObject.GetComponent<SceneController>().LoadScene(2);
     }
 
     void DisplayDamageTaken(int damage)

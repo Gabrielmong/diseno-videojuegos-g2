@@ -7,6 +7,8 @@ TagManager:
   - grid
   - Ground
   - Enemy
+  - Roads
+  - Sand
   layers:
   - Default
   - TransparentFX

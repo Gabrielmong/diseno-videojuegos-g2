@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
     public float runSpeed = 8F;
 
     [Header("Health System")]
-    
+
     [SerializeField]
     private int maxHealth = 100;
 
@@ -37,14 +37,31 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private Transform healthMessageSpawn;
-    
+
+    [SerializeField]
+    private AudioClip[] woodStepsSounds;
+
+    [SerializeField]
+    private AudioClip[] grassStepsSounds;
+
+    [SerializeField]
+    private AudioClip[] sandStepsSounds;
+
+    [SerializeField]
+    private AudioClip punchSound;
+
+    [SerializeField]
+    private AudioClip hitSound;
+
+
+    private bool freezed = false;
 
     // Start is called before the first frame update
     void Start()
     {
         // Get movements components
-        controller= GetComponent<CharacterController>();
-        animator= GetComponent<Animator>();
+        controller = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
         currentHealth = maxHealth;
         healthBar.SetMaxHealth(maxHealth);
     }
@@ -60,7 +77,8 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             TakeDamage(10);
-        } else if (Input.GetKeyDown(KeyCode.R))
+        }
+        else if (Input.GetKeyDown(KeyCode.R))
         {
             Heal(10);
         }
@@ -68,6 +86,11 @@ public class PlayerController : MonoBehaviour
 
     public void Move()
     {
+        if (freezed)
+        {
+            return;
+        }
+
         // Is the sprint key pressed down?
         if (Input.GetButton("Sprint"))
         {
@@ -95,7 +118,7 @@ public class PlayerController : MonoBehaviour
         {
             // Look towards that direction smoothly
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 0.15F);
-            
+
 
             // Move
             controller.Move(velocity);
@@ -105,7 +128,8 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("Speed", dir.magnitude);
     }
 
-    public void HandleClick(){
+    public void HandleClick()
+    {
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -115,17 +139,37 @@ public class PlayerController : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                //Debug.Log(hit.collider.gameObject.layer);
                 if (hit.collider.gameObject.tag == "grid")
                 {
+                    //face player towards the clicked grid
+                    transform.LookAt(hit.collider.gameObject.transform.position);
                     animator.SetBool("isPulling", true);
                     StartCoroutine(Delay());
                 }
                 else
                 {
                     animator.SetBool("isPulling", false);
-                        
+
                     Attack();
+                }
+            }
+        }
+        if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.gameObject.tag == "grid")
+                {
+                    transform.LookAt(hit.collider.gameObject.transform.position);
+                    animator.SetBool("isPlanting", true);
+                    StartCoroutine(Delay());
+                }
+                else
+                {
+                    animator.SetBool("isPlanting", false);
                 }
             }
         }
@@ -134,7 +178,7 @@ public class PlayerController : MonoBehaviour
     public void Attack()
     {
         animator.SetBool("Attack", true);
-        
+
         StartCoroutine(Delay());
     }
 
@@ -143,30 +187,50 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.1F);
         animator.SetBool("Attack", false);
         animator.SetBool("isPulling", false);
+        animator.SetBool("isPlanting", false);
         animator.SetBool("isDamaged", false);
     }
 
-    public void DealDamage() {
+    public void DealDamage()
+    {
         Collider[] hitEnemies = Physics.OverlapSphere(transform.position, 0.3F);
+
+
+        if (hitEnemies.Length == 0)
+        {
+        }
+
 
         foreach (Collider enemy in hitEnemies)
         {
-            if (enemy.GetComponent<EnemyController>())
+            if (enemy.tag == "Enemy")
             {
-                int damage = Random.Range(minDamage, maxDamage);
-                enemy.GetComponent<EnemyController>().TakeDamage(damage);
+                if (enemy.GetComponent<EnemyController>())
+                {
+                    int damage = Random.Range(minDamage, maxDamage);
+                    enemy.GetComponent<EnemyController>().TakeDamage(damage);
+                    AudioManager.Instance.PlaySoundAtPosition(hitSound, transform.position);
+                }
+            }
+            else
+            {
+                AudioManager.Instance.PlaySoundAtPosition(punchSound, transform.position);
             }
         }
     }
 
-    
+
 
     public void TakeDamage(int damage)
     {
+        // freeze player movement
+        freezed = true;
+
         currentHealth -= damage;
         DisplayDamageTaken(damage);
         animator.SetBool("isDamaged", true);
         StartCoroutine(Delay());
+        StartCoroutine(DamageDelay());
 
         healthBar.SetHealth(currentHealth);
 
@@ -174,6 +238,12 @@ public class PlayerController : MonoBehaviour
         {
             Die();
         }
+    }
+
+    IEnumerator DamageDelay()
+    {
+        yield return new WaitForSeconds(2F);
+        freezed = false;
     }
 
     void Die()
@@ -210,6 +280,32 @@ public class PlayerController : MonoBehaviour
         }
 
         DisplayHealing(healing);
+
+        healthBar.SetHealth(currentHealth);
+    }
+
+    public void Step()
+    {
+        // check if the player is on wood or grass
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1.5F))
+        {
+            if (hit.collider.gameObject.tag == "Roads")
+            {
+                // play a random wood sound
+                int index = Random.Range(0, woodStepsSounds.Length);
+                AudioManager.Instance.PlaySoundAtPosition(woodStepsSounds[index], transform.position);
+            }
+            else if (hit.collider.gameObject.tag == "Ground" || hit.collider.gameObject.tag == "grid")
+            {
+                int index = Random.Range(0, grassStepsSounds.Length);
+                AudioManager.Instance.PlaySoundAtPosition(grassStepsSounds[index], transform.position);
+            }
+            else if (hit.collider.gameObject.tag == "Sand")
+            {
+                int index = Random.Range(0, sandStepsSounds.Length);
+                AudioManager.Instance.PlaySoundAtPosition(sandStepsSounds[index], transform.position);
+            }
+        }
     }
 
 }

@@ -13,10 +13,10 @@ public class ProjectileController : MonoBehaviour
     private float lifeTime = 5f;
 
     [SerializeField]
-    private int maxDamage = 10;
+    private int maxDamage = 18;
 
     [SerializeField]
-    private int minDamage = 5;
+    private int minDamage = 8;
     
     [SerializeField]
     LayerMask whatIsSolid;

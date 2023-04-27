@@ -60,6 +60,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private AudioClip hitSound;
 
+    [SerializeField]
+    GameObject sceneManagerObject;
+
     private bool inNpcRange = false;
     private bool freezed = false;
 
@@ -298,6 +301,17 @@ public class PlayerController : MonoBehaviour
 
         // Disable the player
         this.enabled = false;
+
+        StartCoroutine(Delay());
+        StartCoroutine(DieDelay());
+
+        sceneManagerObject.GetComponent<SceneController>().LoadScene(2);
+    }
+
+    IEnumerator DieDelay()
+    {
+        yield return new WaitForSeconds(8F);
+        freezed = false;
     }
 
     void DisplayDamageTaken(int damage)

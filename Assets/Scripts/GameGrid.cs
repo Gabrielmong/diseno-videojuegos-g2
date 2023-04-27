@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GameGrid : MonoBehaviour
 {
+    public static GameGrid Instance;
+
     [SerializeField]
     GameObject player; // to detect if tile is in range of player (3 tiles)
     public int columnLength, rowLength;
@@ -30,11 +33,23 @@ public class GameGrid : MonoBehaviour
 
     public bool creatingFields;
 
-    // NEW
-    public GameObject goldSystem;
-    public int fieldPrice;
-    public int plantPrice;
-    // NEW END
+    [SerializeField]
+    private int availableFlowers;
+
+    [SerializeField]
+    private int availableGrass;
+
+    [SerializeField]
+    private TextMeshProUGUI seedsText;
+
+    [SerializeField]
+    private TextMeshProUGUI grassText;
+
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -51,6 +66,9 @@ public class GameGrid : MonoBehaviour
                 Instantiate(grass, new Vector3(x_Space + (x_Space * (i % columnLength)), 0, z_Space + (z_Space * (i / columnLength))), Quaternion.identity);
             }
         }
+        
+        seedsText.text = availableFlowers.ToString();
+        grassText.text = availableGrass.ToString();
     }
 
     void Update()
@@ -74,21 +92,23 @@ public class GameGrid : MonoBehaviour
                         && (_Hit.transform.gameObject.name == "Flowers(Clone)"
                         || _Hit.transform.gameObject.name == "Grass(Clone)"))
                     {
+                        
                         hitted = _Hit.transform.gameObject;
                         Instantiate(field, hitted.transform.position, Quaternion.identity);
                         Destroy(hitted);
                     }
                     else if (_Hit.transform.tag == "grid"
-                        && _Hit.transform.gameObject.name == "Field(Clone)"
-                        && goldSystem.GetComponent<GoldSystem>().gold >= fieldPrice) // NEW
+                        && _Hit.transform.gameObject.name == "Field(Clone)")
                     {
                         hitted = _Hit.transform.gameObject;
-                        Instantiate(grass, hitted.transform.position, Quaternion.identity);
-                        Destroy(hitted);
+                        if (availableGrass > 0)
+                        {
+                            Instantiate(grass, hitted.transform.position, Quaternion.identity);
+                            availableGrass--;
+                            grassText.text = availableGrass.ToString();
+                            Destroy(hitted);
+                        }
 
-                        // NEW
-                        goldSystem.GetComponent<GoldSystem>().gold -= fieldPrice;
-                        // NEW END
                     }
                 }
 
@@ -101,16 +121,16 @@ public class GameGrid : MonoBehaviour
                 if (checkIfInRange()) { return; }
 
                 if (_Hit.transform.tag == "grid"
-                    && _Hit.transform.gameObject.name == "Field(Clone)"
-                    && goldSystem.GetComponent<GoldSystem>().gold >= plantPrice) // NEW
+                    && _Hit.transform.gameObject.name == "Field(Clone)") // NEW
                 {
                     hitted = _Hit.transform.gameObject;
-                    Instantiate(flowers, hitted.transform.position, Quaternion.identity);
-                    Destroy(hitted);
-
-                    // NEW
-                    goldSystem.GetComponent<GoldSystem>().gold -= plantPrice;
-                    // NEW END
+                    if (availableFlowers > 0)
+                    {
+                        Instantiate(flowers, hitted.transform.position, Quaternion.identity);
+                        availableFlowers--;
+                        seedsText.text = availableFlowers.ToString();
+                        Destroy(hitted);
+                    }
                 }
             }
         }
@@ -118,7 +138,7 @@ public class GameGrid : MonoBehaviour
 
     public bool checkIfInRange()
     {
-        return Vector3.Distance(player.transform.position, _Hit.transform.position) > 3;    
+        return Vector3.Distance(player.transform.position, _Hit.transform.position) > 3;
     }
 
     public void createFields()
@@ -129,5 +149,17 @@ public class GameGrid : MonoBehaviour
     public void returnToNormality()
     {
         creatingFields = false;
+    }
+
+    public void AddFlowers(int amount)
+    {
+        availableFlowers += amount;
+        seedsText.text = availableFlowers.ToString();
+    }
+
+    public void AddGrass(int amount)
+    {
+        availableGrass += amount;
+        grassText.text = availableGrass.ToString();
     }
 }

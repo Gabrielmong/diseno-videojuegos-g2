@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance;
     // Movement Components
     CharacterController controller;
     Animator animator;
@@ -24,6 +25,12 @@ public class PlayerController : MonoBehaviour
     private int currentHealth;
 
     public HealthBar healthBar;
+
+    [SerializeField]
+    private TextMeshProUGUI healthPotionsText;
+
+    [SerializeField]
+    private int healthPotions = 3;
 
     [Header("Attack System")]
     [SerializeField]
@@ -53,8 +60,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private AudioClip hitSound;
 
-
+    private bool inNpcRange = false;
     private bool freezed = false;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -80,7 +92,14 @@ public class PlayerController : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.R))
         {
-            Heal(10);
+            if (healthPotions > 0)
+            {
+                healthPotions--;
+                currentHealth += 20;
+                healthBar.SetHealth(currentHealth);
+                healthPotionsText.text = healthPotions.ToString();
+                DisplayHealing(20);
+            }
         }
     }
 
@@ -150,6 +169,12 @@ public class PlayerController : MonoBehaviour
                 {
                     animator.SetBool("isPulling", false);
 
+                    // if the player is on an NPC collider,dont attack
+                    if (inNpcRange)
+                    {
+                        return;
+                    }
+
                     Attack();
                 }
             }
@@ -175,6 +200,22 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "NPC")
+        {
+            inNpcRange = true;
+        }
+    }
+
+    public void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "NPC")
+        {
+            inNpcRange = false;
+        }
+    }
+
     public void Attack()
     {
         animator.SetBool("Attack", true);
@@ -193,11 +234,12 @@ public class PlayerController : MonoBehaviour
 
     public void DealDamage()
     {
-        Collider[] hitEnemies = Physics.OverlapSphere(transform.position, 0.3F);
+        Collider[] hitEnemies = Physics.OverlapSphere(transform.position, 0.1F);
 
 
         if (hitEnemies.Length == 0)
         {
+            AudioManager.Instance.PlaySoundAtPosition(punchSound, transform.position);
         }
 
 
@@ -205,20 +247,23 @@ public class PlayerController : MonoBehaviour
         {
             if (enemy.tag == "Enemy")
             {
-                if (enemy.GetComponent<EnemyController>())
+                Vector3 enemyPosition = enemy.transform.position;	
+                Vector3 playerPosition = transform.position;
+                Vector3 playerForward = transform.forward;
+                Vector3 playerToEnemy = enemyPosition - playerPosition;
+                float angle = Vector3.Angle(playerForward, playerToEnemy);
+                if (angle < 45)
                 {
-                    int damage = Random.Range(minDamage, maxDamage);
-                    enemy.GetComponent<EnemyController>().TakeDamage(damage);
-                    AudioManager.Instance.PlaySoundAtPosition(hitSound, transform.position);
+                    if (enemy.GetComponent<EnemyController>())
+                    {
+                        int damage = Random.Range(minDamage, maxDamage);
+                        enemy.GetComponent<EnemyController>().TakeDamage(damage);
+                        AudioManager.Instance.PlaySoundAtPosition(hitSound, transform.position);
+                    }
                 }
-            }
-            else
-            {
-                AudioManager.Instance.PlaySoundAtPosition(punchSound, transform.position);
             }
         }
     }
-
 
 
     public void TakeDamage(int damage)
@@ -249,7 +294,7 @@ public class PlayerController : MonoBehaviour
     void Die()
     {
         // Die animation
-        animator.SetTrigger("Die");
+        animator.SetBool("isDead", true);
 
         // Disable the player
         this.enabled = false;
@@ -306,6 +351,12 @@ public class PlayerController : MonoBehaviour
                 AudioManager.Instance.PlaySoundAtPosition(sandStepsSounds[index], transform.position);
             }
         }
+    }
+
+    public void AddHealthPotions(int amount)
+    {
+        healthPotions += amount;
+        healthPotionsText.text = healthPotions.ToString();
     }
 
 }

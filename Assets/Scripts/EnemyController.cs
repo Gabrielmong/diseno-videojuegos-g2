@@ -82,7 +82,6 @@ public class EnemyController : MonoBehaviour
         DisplayDamageTaken(damage);
 
         animator.SetTrigger("Hurt");
-        Debug.Log("Enemy took " + damage + " damage. Current health: " + currentHealth);
         if (currentHealth <= 0)
         {
             Die();

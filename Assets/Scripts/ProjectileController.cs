@@ -16,7 +16,7 @@ public class ProjectileController : MonoBehaviour
     private int maxDamage = 18;
 
     [SerializeField]
-    private int minDamage = 8;
+    private int minDamage = 14;
     
     [SerializeField]
     LayerMask whatIsSolid;
@@ -33,6 +33,8 @@ public class ProjectileController : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             int damage = Random.Range(minDamage, maxDamage);
+
+            Debug.Log("Player hit for " + damage + " damage");
             collision.gameObject.GetComponent<PlayerController>().TakeDamage(damage);
             Destroy(gameObject);
         }

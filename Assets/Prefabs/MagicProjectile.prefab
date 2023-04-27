@@ -83614,7 +83614,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   lifeTime: 5
-  damage: 1
+  maxDamage: 18
+  minDamage: 10
   whatIsSolid:
     serializedVersion: 2
     m_Bits: 64

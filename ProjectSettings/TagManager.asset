@@ -9,6 +9,8 @@ TagManager:
   - Enemy
   - Roads
   - Sand
+  - Village
+  - NPC
   layers:
   - Default
   - TransparentFX
